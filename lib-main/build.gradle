@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-apply plugin: com.tencent.fit.fataar.FatLibraryPlugin
+apply plugin: com.boiqin.fataar.FatLibraryPlugin
 
 repositories {
     flatDir {
