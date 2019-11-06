@@ -6,6 +6,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.artifacts.*
+import org.gradle.api.internal.artifacts.DefaultResolvedArtifact
 import java.util.*
 import kotlin.collections.HashSet
 
@@ -75,8 +76,8 @@ class FatLibraryPlugin : Plugin<Project> {
     }
 
     private fun createConfiguration() {
-        embedConf = project.configurations.create("embed")
-        embedConf.isVisible = false
+        embedConf = project.configurations.create("embed").extendsFrom()
+        embedConf.isVisible = true
         embedConf.isTransitive = false
 
         project.gradle.addListener(object : DependencyResolutionListener {
@@ -84,11 +85,13 @@ class FatLibraryPlugin : Plugin<Project> {
             override fun beforeResolve(resolvableDependencies: ResolvableDependencies) {
                 embedConf.dependencies.forEach {
                     project.dependencies.add("compileOnly", it)
+                    Utils.logInfo("beforeResolve, add dependencies:$it")
                 }
                 project.gradle.removeListener(this)
             }
 
             override fun afterResolve(resolvableDependencies: ResolvableDependencies) {
+                Utils.logInfo("afterResolve resolvableDependencies:$resolvableDependencies")
             }
         })
     }
@@ -98,31 +101,31 @@ class FatLibraryPlugin : Plugin<Project> {
      */
     private fun resolveArtifacts() {
         val set = HashSet<ResolvedArtifact>()
-        println("resolveArtifacts")
         embedConf.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
+            Utils.logInfo("embedConf.resolvedConfiguration.resolveLocalArtifacts is $artifact")
             // jar file wouldn't be here
-            println(artifact.type)
             if (ARTIFACT_TYPE_AAR == artifact.type || ARTIFACT_TYPE_JAR == artifact.type) {
-                Utils.logAnytime("[embed detected][" + artifact.type + "]" + artifact.moduleVersion.id)
+                Utils.logInfo("[embed detected][${artifact.type}] ${artifact.moduleVersion.id}")
             } else {
                 throw ProjectConfigurationException("Only support embed aar and jar dependencies!", Throwable())
             }
-            set.add(artifact)
+            set.add(artifact as DefaultResolvedArtifact)
         }
         if (set.isEmpty()) {
-            //"没有embed配置的resolvedConfiguration"
+            Utils.logInfo("没有embed配置的resolvedConfiguration")
         } else {
             artifacts = Collections.unmodifiableSet(set)
         }
     }
 
     private fun processVariant(variant: LibraryVariant) {
+        Utils.logInfo("processVariant ${variant.flavorName}")
         val processor = VariantProcessor(project, variant)
         if (artifacts.isNotEmpty()) {
             processor.addArtifacts(artifacts)
-            //LogUtil.blue("processor.addArtifacts $resolvedArtifacts")
+            Utils.logInfo("processor.addArtifacts $artifacts")
         } else {
-            //LogUtil.green("processor.addArtifact,but resolvedArtifacts is empty")
+            Utils.logInfo("processor.addArtifact,but resolvedArtifacts is empty")
         }
         processor.addUnResolveArtifact(unResolveArtifact)
         processor.processVariant()
@@ -140,13 +143,13 @@ class FatLibraryPlugin : Plugin<Project> {
                 }
             }
             if (!match) {
-                Utils.logAnytime("[unResolve dependency detected][${dependency.name}]")
+                Utils.logInfo("[unResolve dependency detected][${dependency.name}]")
                 dependencySet.add(dependency)
             }
         }
 
         if (dependencySet.isEmpty()) {
-            //LogUtil.yellow("没有embedConf配置的unResolve dependency")
+            Utils.logInfo("没有embedConf配置的unResolve dependency")
         } else {
             unResolveArtifact = Collections.unmodifiableSet(dependencySet)
         }
