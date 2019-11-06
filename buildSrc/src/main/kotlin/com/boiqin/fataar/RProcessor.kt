@@ -78,7 +78,7 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
         }
 
         reBundleAar.doLast {
-            Utils.logAnytime("target: $aarOutputPath")
+            Utils.logInfo("target: $aarOutputPath")
         }
 
         bundleTask.doFirst {
@@ -89,8 +89,6 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
             jarDir.parentFile?.apply {
                 Utils.deleteDir(this)
             }
-
-
             jarDir.mkdirs()
         }
 
@@ -109,7 +107,7 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
         rJarTask.finalizedBy(reBundleAar)
     }
 
-    private fun createRFile(library: AndroidArchiveLibrary, rFolder: File?, symbolsMap:
+    private fun createRFile(library: AndroidArchiveLibrary, rFolder: File, symbolsMap:
     Map<String, HashMap<String, String>>) {
         val libPackageName = variant.applicationId
         val aarPackageName = library.packageName
@@ -188,9 +186,7 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
     }
 
     private fun createRClassTask(sourceDir: File, destinationDir: File): Task {
-        println("createRClassTask start")
         project.mkdir(destinationDir)
-        println("createRClassTask end")
 
         val classpath = versionAdapter.rClassPath
         val taskName = "compileRs${variant.name.capitalize()}"
@@ -201,9 +197,6 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
             it.targetCompatibility = android.compileOptions.targetCompatibility.toString()
             it.classpath = classpath
             it.destinationDir = destinationDir
-
-            println(it.sourceCompatibility)
-            println(it.targetCompatibility)
         }
 
         task.doFirst {

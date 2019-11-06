@@ -27,7 +27,7 @@ class FatLibraryPlugin : Plugin<Project> {
 
     private lateinit var embedConf: Configuration
 
-    private var artifacts: Set<ResolvedArtifact> = HashSet()
+    private var artifacts: Set<DefaultResolvedArtifact> = HashSet()
 
     private var unResolveArtifact: Set<ResolvedDependency> = HashSet()
 
@@ -100,7 +100,7 @@ class FatLibraryPlugin : Plugin<Project> {
      * 处理本地embed aar和jar包
      */
     private fun resolveArtifacts() {
-        val set = HashSet<ResolvedArtifact>()
+        val set = HashSet<DefaultResolvedArtifact>()
         embedConf.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
             Utils.logInfo("embedConf.resolvedConfiguration.resolveLocalArtifacts is $artifact")
             // jar file wouldn't be here

@@ -11,19 +11,19 @@ import javax.xml.parsers.DocumentBuilderFactory
  * Modify by kezong on 2019/7/16.
  * Modify by alexbchen on 2019/11/05.
  */
-class AndroidArchiveLibrary(private val project: Project, private val mArtifact: ResolvedArtifact, private val mVariantName: String) {
+class AndroidArchiveLibrary(private val project: Project, private val artifact: ResolvedArtifact, private val variantName: String) {
 
     val group: String
-        get() = mArtifact.moduleVersion.id.group
+        get() = artifact.moduleVersion.id.group
 
     val name: String
-        get() = mArtifact.moduleVersion.id.name
+        get() = artifact.moduleVersion.id.name
 
     val version: String
-        get() = mArtifact.moduleVersion.id.version
+        get() = artifact.moduleVersion.id.version
 
     init {
-        require("aar" == mArtifact.type) { "artifact must be aar type!" }
+        require("aar" == artifact.type) { "artifact must be aar type!" }
     }
 
     /**
@@ -33,12 +33,12 @@ class AndroidArchiveLibrary(private val project: Project, private val mArtifact:
         get() {
             val explodedRootDir = project.file(
                     project.buildDir.toString() + "/intermediates" + "/exploded-aar/")
-            val id = mArtifact.moduleVersion.id
+            val id = artifact.moduleVersion.id
             return project.file(explodedRootDir.toString()
                     + "/" + id.group
                     + "/" + id.name
                     + "/" + id.version
-                    + "/" + mVariantName)
+                    + "/" + variantName)
         }
 
     val aidlFolder: File

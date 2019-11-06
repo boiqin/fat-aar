@@ -67,10 +67,15 @@ object ExplodedHelper {
                 Utils.logInfo("[warning]" + androidLibrary.rootFolder + " not found!")
                 continue
             }
+            Utils.logInfo(
+          "processClassesJarInfoClasses: ${androidLibrary.classesJarFile.absolutePath}")
             allJarFiles.add(androidLibrary.classesJarFile)
         }
         for (jarFile in allJarFiles) {
             project.copy {
+                Utils.logInfo(
+                        "copy from ${jarFile.absolutePath} to ${folderOut.absolutePath}")
+                //jar包解压为class文件 在复制过去
                 it.from(project.zipTree(jarFile))
                 it.into(folderOut)
                 it.exclude("META-INF/")

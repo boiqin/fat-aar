@@ -29,8 +29,7 @@ class VersionAdapter(private val project: Project, private val variant: LibraryV
         }
 
     val rClassPath: ConfigurableFileCollection
-        get() {
-            return when {
+        get() = when {
                 Utils.compareVersion(gradlePluginVersion, "3.5.0") >= 0 -> project.files("${project
                         .buildDir.path}/intermediates/" + "compile_only_not_namespaced_r_class_jar/"
                         + variant.name)
@@ -38,7 +37,6 @@ class VersionAdapter(private val project: Project, private val variant: LibraryV
                         .buildDir.path}/intermediates/" + "compile_only_not_namespaced_r_class_jar/"
                         + "${variant.name}/generate${variant.name.capitalize()}RFile")
                 else -> classPathDirFiles
-            }
         }
 
     val libsDirFile: File

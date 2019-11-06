@@ -33,7 +33,7 @@ open class LibraryManifestMerger : InvokeManifestMerger() {
 
     @TaskAction
     @Throws(ManifestMerger2.MergeFailureException::class, IOException::class)
-    protected fun doFullTaskAction() {
+    fun doFullTaskAction() {
         val iLogger = LoggerWrapper(logger)
         val mergerInvoker = ManifestMerger2.newMerger(mainManifestFile, iLogger, ManifestMerger2.MergeType.LIBRARY)
         val secondaryManifestFiles = secondaryManifestFiles

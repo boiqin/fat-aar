@@ -20,7 +20,7 @@ import java.io.File
 class VariantProcessor(private val project: Project, private val variant: LibraryVariant) {
 
 
-    private val resolvedArtifacts = ArrayList<ResolvedArtifact>()
+    private val resolvedArtifacts = ArrayList<DefaultResolvedArtifact>()
 
     private val androidArchiveLibraries = ArrayList<AndroidArchiveLibrary>()
 
@@ -28,9 +28,9 @@ class VariantProcessor(private val project: Project, private val variant: Librar
 
     private val explodeTasks = ArrayList<Task>()
 
-    private var gradlePluginVersion: String? = null
+    private var gradlePluginVersion: String = ""
 
-    private lateinit var versionAdapter: VersionAdapter
+    private var versionAdapter: VersionAdapter
 
     private val android = project.extensions.getByName("android") as LibraryExtension
 
@@ -38,18 +38,21 @@ class VariantProcessor(private val project: Project, private val variant: Librar
         // gradle version
         project.rootProject.buildscript.configurations.getByName("classpath").dependencies.forEach {
             if (it.group == "com.android.tools.build" && it.name == "gradle") {
-                gradlePluginVersion = it.version
+                gradlePluginVersion = it.version!!
             }
         }
-        checkNotNull(gradlePluginVersion) {
+        check(gradlePluginVersion.isNotEmpty()) {
             "com.android.tools.build:gradle is no set in the root" +
                     " build.gradle file"
         }
-        versionAdapter = VersionAdapter(project, variant, gradlePluginVersion!!)
+        versionAdapter = VersionAdapter(project, variant, gradlePluginVersion)
     }
 
-    fun addArtifacts(resolvedArtifacts: Set<ResolvedArtifact>) {
+    fun addArtifacts(resolvedArtifacts: Set<DefaultResolvedArtifact>) {
         this.resolvedArtifacts.addAll(resolvedArtifacts)
+        resolvedArtifacts.forEach {
+            Utils.logInfo("addArtifacts $it")
+        }
     }
 
     private fun addAndroidArchiveLibrary(library: AndroidArchiveLibrary) {
@@ -57,13 +60,13 @@ class VariantProcessor(private val project: Project, private val variant: Librar
     }
 
     fun addUnResolveArtifact(dependencies: Set<ResolvedDependency>) {
-        if (dependencies != null) {
             dependencies.forEach {
                 val artifact = FlavorArtifact.createFlavorArtifact(project, variant, it,
-                        gradlePluginVersion!!)
+                        gradlePluginVersion)
+                Utils.logInfo("addUnResolveArtifact $artifact")
                 resolvedArtifacts.add(artifact)
             }
-        }
+
     }
 
     private fun addJarFile(jar: File) {
@@ -95,14 +98,12 @@ class VariantProcessor(private val project: Project, private val variant: Librar
         processJniLibs()
         processProguardTxt(prepareTask)
         val rProcessor = RProcessor(project, variant, androidArchiveLibraries,
-                gradlePluginVersion!!)
+                gradlePluginVersion)
         rProcessor.inject(bundleTask)
     }
 
     private fun processCache() {
-        if (Utils.compareVersion(gradlePluginVersion!!, "3.5.0") >= 0) {
-            println(gradlePluginVersion)
-            //TODO
+        if (Utils.compareVersion(gradlePluginVersion, "3.5.0") >= 0) {
             Utils.deleteDir(versionAdapter.libsDirFile)
             Utils.deleteDir(versionAdapter.classPathDirFiles.first())
         }
@@ -113,8 +114,8 @@ class VariantProcessor(private val project: Project, private val variant: Librar
      * exploded artifact files
      */
     private fun processArtifacts(prepareTask: Task, bundleTask: Task) {
-        resolvedArtifacts.forEach {
-            val artifact = it as DefaultResolvedArtifact
+        resolvedArtifacts.forEach {artifact->
+            Utils.logInfo("准备解压Aar: $artifact")
             if (FatLibraryPlugin.ARTIFACT_TYPE_JAR == artifact.type) {
                 addJarFile(artifact.file)
             } else if (FatLibraryPlugin.ARTIFACT_TYPE_AAR == artifact.type) {
@@ -122,12 +123,18 @@ class VariantProcessor(private val project: Project, private val variant: Librar
                 addAndroidArchiveLibrary(archiveLibrary)
 
 //                val buildDependencies =
-//                        artifact.getBuildDependencies().getDependencies(null)
+//                        artifact.buildDependencies.getDependencies(null)
+
+
                 // 反射调用private属性
                 val clazz = DefaultResolvedArtifact::class.java
                 val buildDependenciesField = clazz.getDeclaredField("buildDependencies")
                 buildDependenciesField.isAccessible = true
                 val buildDependencies = (buildDependenciesField.get(artifact) as TaskDependency).getDependencies(null)
+                for (dep in buildDependencies) {
+                    //BaseCommon-WKDev-debug.aar dep is task ':BaseCommon:bundleWKDevDebugAar'
+                    Utils.logInfo("$artifact dep is $dep")
+                }
                 //val buildDependencies = artifact.buildDependencies.getDependencies()
                 Utils.deleteDir(archiveLibrary.rootFolder)
                 val zipFolder = archiveLibrary.rootFolder
@@ -139,11 +146,16 @@ class VariantProcessor(private val project: Project, private val variant: Librar
                     from(project.zipTree(artifact.file.absolutePath))
                     into(zipFolder)
                 }
+//                val explodeTask = project.tasks.create(taskName) {
+//                    println("the explodeTask is: $taskName")
+//                }
 
                 if (buildDependencies.size == 0) {
                     explodeTask.dependsOn(prepareTask)
                 } else {
                     explodeTask.dependsOn(buildDependencies.first())
+                    //buildDependencies.first().finalizedBy(explodeTask)
+
                 }
                 val javacTask = versionAdapter.javaCompileTask
                 javacTask.dependsOn(explodeTask)
@@ -159,7 +171,7 @@ class VariantProcessor(private val project: Project, private val variant: Librar
     private fun processManifest() {
         val processManifestTask = versionAdapter.processManifest
         val manifestOutputBackup = if (gradlePluginVersion != null && Utils.compareVersion
-                (gradlePluginVersion!!, "3.3.0") >= 0) {
+                (gradlePluginVersion, "3.3.0") >= 0) {
             project.file("${project.buildDir.path}/intermediates/library_manifest/${variant
                     .name}/AndroidManifest.xml")
         } else {
@@ -286,8 +298,6 @@ class VariantProcessor(private val project: Project, private val variant: Librar
         resourceGenTask.doFirst {
             for (archiveLibrary in androidArchiveLibraries) {
                 android.sourceSets.forEach {
-                    println(it.name)
-                    println(variant.name)
                     if (it.name == variant.name) {
                         Utils.logInfo("Merge resource，Library res：${archiveLibrary.resFolder}")
                         it.res.srcDir(archiveLibrary.resFolder)
@@ -313,7 +323,6 @@ class VariantProcessor(private val project: Project, private val variant: Librar
             for (archiveLibrary in androidArchiveLibraries) {
                 if (archiveLibrary.assetsFolder.exists()) {
                     android.sourceSets.forEach {
-                        println("processAssets" + variant.name)
                         if (it.name == variant.name) {
                             it.assets.srcDir(archiveLibrary.assetsFolder)
 
@@ -378,8 +387,7 @@ class VariantProcessor(private val project: Project, private val variant: Librar
                 for (file in thirdProguardFiles) {
                     if (file.exists()) {
                         Utils.logInfo("add proguard file: " + file.absolutePath)
-                        // TODO
-                        proguardFiles.files.add(file)
+                        proguardFiles.plus(file)
                     }
                 }
             }
