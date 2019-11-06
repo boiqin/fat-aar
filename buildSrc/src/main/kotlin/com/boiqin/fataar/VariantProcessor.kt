@@ -8,7 +8,6 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.internal.artifacts.DefaultResolvedArtifact
-import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.TaskDependency
 import java.io.File
@@ -42,8 +41,10 @@ class VariantProcessor(private val project: Project, private val variant: Librar
                 gradlePluginVersion = it.version
             }
         }
-        checkNotNull(gradlePluginVersion) { "com.android.tools.build:gradle is no set in the root" +
-                " build.gradle file" }
+        checkNotNull(gradlePluginVersion) {
+            "com.android.tools.build:gradle is no set in the root" +
+                    " build.gradle file"
+        }
         versionAdapter = VersionAdapter(project, variant, gradlePluginVersion!!)
     }
 

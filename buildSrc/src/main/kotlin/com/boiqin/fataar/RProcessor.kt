@@ -4,7 +4,6 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.api.LibraryVariant
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.JavaCompile
@@ -12,7 +11,6 @@ import org.gradle.jvm.tasks.Jar
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
-import kotlin.collections.LinkedHashMap
 
 
 /**
@@ -22,8 +20,8 @@ import kotlin.collections.LinkedHashMap
 class RProcessor(private val project: Project, private val variant: LibraryVariant,
                  private val libraries: Collection<AndroidArchiveLibrary>, private val gradlePluginVersion: String) {
 
-    private  var javaDir: File
-    private  var classDir: File
+    private var javaDir: File
+    private var classDir: File
     private var jarDir: File
     private var aarUnZipDir: File
     private var aarOutputDir: File
@@ -128,7 +126,7 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
                     if (!rMap.containsKey(resType)) {
                         rMap[resType] = hashMapOf(Pair(resName, intString))
                     } else {
-                        rMap[resType]?.put(resName,intString)
+                        rMap[resType]?.put(resName, intString)
                     }
                 }
             }

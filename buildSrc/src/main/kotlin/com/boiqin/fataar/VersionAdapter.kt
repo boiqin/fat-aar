@@ -15,78 +15,78 @@ class VersionAdapter(private val project: Project, private val variant: LibraryV
 
     val classPathDirFiles: ConfigurableFileCollection
         get() {
-        return when {
-            Utils.compareVersion(gradlePluginVersion, "3.5.0") >= 0 -> project.files("${project
-                    .buildDir.path}/intermediates/" +
-                    "javac/${variant.name}/classes")
-            Utils.compareVersion(gradlePluginVersion, "3.2.0") >= 0 -> // >= Versions 3.2.X
-                project.files("${project.buildDir.path}/intermediates/" +
-                        "javac/${variant.name}/compile${variant.name.capitalize()
-                        }JavaWithJavac/classes")
-            else -> // Versions 3.0.x and 3.1.x
-                project.files("${project.buildDir.path}/intermediates/classes/${variant.dirName}")
+            return when {
+                Utils.compareVersion(gradlePluginVersion, "3.5.0") >= 0 -> project.files("${project
+                        .buildDir.path}/intermediates/" +
+                        "javac/${variant.name}/classes")
+                Utils.compareVersion(gradlePluginVersion, "3.2.0") >= 0 -> // >= Versions 3.2.X
+                    project.files("${project.buildDir.path}/intermediates/" +
+                            "javac/${variant.name}/compile${variant.name.capitalize()
+                            }JavaWithJavac/classes")
+                else -> // Versions 3.0.x and 3.1.x
+                    project.files("${project.buildDir.path}/intermediates/classes/${variant.dirName}")
+            }
         }
-    }
 
     val rClassPath: ConfigurableFileCollection
         get() {
-        return when {
-            Utils.compareVersion(gradlePluginVersion, "3.5.0") >= 0 -> project.files("${project
-                    .buildDir.path}/intermediates/" + "compile_only_not_namespaced_r_class_jar/"
-                    + variant.name)
-            Utils.compareVersion(gradlePluginVersion, "3.3.0") >= 0 -> project.files("${project
-                    .buildDir.path}/intermediates/" + "compile_only_not_namespaced_r_class_jar/"
-                    + "${variant.name}/generate${variant.name.capitalize()}RFile")
-            else -> classPathDirFiles
+            return when {
+                Utils.compareVersion(gradlePluginVersion, "3.5.0") >= 0 -> project.files("${project
+                        .buildDir.path}/intermediates/" + "compile_only_not_namespaced_r_class_jar/"
+                        + variant.name)
+                Utils.compareVersion(gradlePluginVersion, "3.3.0") >= 0 -> project.files("${project
+                        .buildDir.path}/intermediates/" + "compile_only_not_namespaced_r_class_jar/"
+                        + "${variant.name}/generate${variant.name.capitalize()}RFile")
+                else -> classPathDirFiles
+            }
         }
-    }
 
     val libsDirFile: File
         get() {
-        return if (Utils.compareVersion(gradlePluginVersion, "3.1.0") >= 0) {
-            project.file(project.buildDir.path + "/intermediates/packaged-classes/" + variant
-                    .dirName + "/libs")
-        } else {
-            project.file(project.buildDir.path + "/intermediates/bundles/" + variant.dirName +
-                    "/libs")
+            return if (Utils.compareVersion(gradlePluginVersion, "3.1.0") >= 0) {
+                project.file(project.buildDir.path + "/intermediates/packaged-classes/" + variant
+                        .dirName + "/libs")
+            } else {
+                project.file(project.buildDir.path + "/intermediates/bundles/" + variant.dirName +
+                        "/libs")
+            }
         }
-    }
 
     val javaCompileTask: Task
         get() {
-        return if (Utils.compareVersion(gradlePluginVersion, "3.3.0") >= 0) {
-            variant.javaCompileProvider.get()
-        } else {
-            variant.javaCompiler
+            return if (Utils.compareVersion(gradlePluginVersion, "3.3.0") >= 0) {
+                variant.javaCompileProvider.get()
+            } else {
+                variant.javaCompiler
+            }
         }
-    }
 
     val processManifest: ManifestProcessorTask
         get() {
-        return if (Utils.compareVersion(gradlePluginVersion, "3.3.0") >= 0) {
-            variant.outputs.first().processManifestProvider.get()
-        } else {
-            variant.outputs.first().processManifest
+            return if (Utils.compareVersion(gradlePluginVersion, "3.3.0") >= 0) {
+                variant.outputs.first().processManifestProvider.get()
+            } else {
+                variant.outputs.first().processManifest
+            }
         }
-    }
 
     val mergeAssets: Task
         get() {
-        return if (Utils.compareVersion(gradlePluginVersion, "3.3.0") >= 0) {
-            variant.mergeAssetsProvider.get()
-        } else {
-            variant.mergeAssets
+            return if (Utils.compareVersion(gradlePluginVersion, "3.3.0") >= 0) {
+                variant.mergeAssetsProvider.get()
+            } else {
+                variant.mergeAssets
+            }
         }
-    }
 
     val symbolFile: File
         get() {
-        return if (Utils.compareVersion(gradlePluginVersion, "3.1.0") >= 0) {
-            project.file(project.buildDir.path + "/intermediates/symbols/" + variant.dirName +
-                    "/R.txt")
-        } else {
-            project.file(project.buildDir.path + "/intermediates/bundles/" + variant.name + "/R" +
-                    ".txt")
+            return if (Utils.compareVersion(gradlePluginVersion, "3.1.0") >= 0) {
+                project.file(project.buildDir.path + "/intermediates/symbols/" + variant.dirName +
+                        "/R.txt")
+            } else {
+                project.file(project.buildDir.path + "/intermediates/bundles/" + variant.name + "/R" +
+                        ".txt")
+            }
         }
-    }
 }

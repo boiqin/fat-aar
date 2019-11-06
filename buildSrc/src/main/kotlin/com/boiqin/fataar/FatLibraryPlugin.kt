@@ -6,7 +6,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.artifacts.*
-import org.gradle.api.plugins.ExtensionContainer
 import java.util.*
 import kotlin.collections.HashSet
 
@@ -33,14 +32,15 @@ class FatLibraryPlugin : Plugin<Project> {
 
 
     override fun apply(project: Project) {
-        println("start embed")
+        Utils.logInfo("this is fataar ,dealing with " + project
+                .name)
+        val taskList = project.gradle.startParameter.taskNames
+        for (task in taskList) {
+            Utils.logInfo("execute gradle task: $task")
+        }
         this.project = project
-        Utils.setProject(project)
         checkAndroidPlugin()
         createConfiguration()
-
-        val taskList = project.gradle.startParameter.taskNames
-
         project.afterEvaluate {
             resolveArtifacts()
             dealUnResolveArtifacts()
@@ -53,15 +53,15 @@ class FatLibraryPlugin : Plugin<Project> {
                 val currentFlavor = it.flavorName + it.buildType.name.capitalize()
                 taskList.isNotEmpty() && taskList.first().contains(currentFlavor, true)
             }.forEach {
-                //LogUtil.blue("start process: ${it.flavorName}${it.buildType.name.capitalize()}")
+                Utils.logInfo("start process: ${it.flavorName}${it.buildType.name.capitalize()}")
                 taskFounded = true
                 // 开始处理
                 processVariant(it)
             }
 
             if (!taskFounded && taskList.isNotEmpty()) {
-                //LogUtil.info(
-                //        "CombineAarPlugin has no talk with current task: ${taskList.first()}")
+                Utils.logInfo(
+                        "CombineAarPlugin has no talk with current task: ${taskList.first()}")
             }
         }
 
@@ -109,9 +109,9 @@ class FatLibraryPlugin : Plugin<Project> {
             }
             set.add(artifact)
         }
-        if(set.isEmpty()){
+        if (set.isEmpty()) {
             //"没有embed配置的resolvedConfiguration"
-        }else {
+        } else {
             artifacts = Collections.unmodifiableSet(set)
         }
     }
