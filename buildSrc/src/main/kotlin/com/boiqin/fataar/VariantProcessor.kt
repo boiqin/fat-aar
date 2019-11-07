@@ -16,6 +16,7 @@ import java.io.File
  * Processor for variant
  * Created by Vigi on 2017/2/24.
  * Modified by kezong on 2019/05/29
+ * Modify by alexbchen on 2019/11/05.
  */
 class VariantProcessor(private val project: Project, private val variant: LibraryVariant) {
 
@@ -122,21 +123,12 @@ class VariantProcessor(private val project: Project, private val variant: Librar
                 val archiveLibrary = AndroidArchiveLibrary(project, artifact, variant.name)
                 addAndroidArchiveLibrary(archiveLibrary)
 
-//                val buildDependencies =
-//                        artifact.buildDependencies.getDependencies(null)
+                val buildDependencies =
+                        artifact.getBuildDependencies().getDependencies(null)
 
-
-                // 反射调用private属性
-                val clazz = DefaultResolvedArtifact::class.java
-                val buildDependenciesField = clazz.getDeclaredField("buildDependencies")
-                buildDependenciesField.isAccessible = true
-                val buildDependencies = (buildDependenciesField.get(artifact) as TaskDependency).getDependencies(null)
                 for (dep in buildDependencies) {
-                    //BaseCommon-WKDev-debug.aar dep is task ':BaseCommon:bundleWKDevDebugAar'
                     Utils.logInfo("$artifact dep is $dep")
                 }
-                //val buildDependencies = artifact.buildDependencies.getDependencies()
-
 
                 Utils.deleteDir(archiveLibrary.rootFolder)
                 val zipFolder = archiveLibrary.rootFolder
@@ -145,19 +137,15 @@ class VariantProcessor(private val project: Project, private val variant: Librar
                 val name = artifact.name.capitalize()
                 val taskName = "explode${group}${name}${variant.name.capitalize()}"
                 val explodeTask = project.tasks.create<Copy>(taskName, Copy::class.java).run {
+                    Utils.logInfo("the explodeTask is: $taskName")
                     from(project.zipTree(artifact.file.absolutePath))
                     into(zipFolder)
                 }
-//                val explodeTask = project.tasks.create(taskName) {
-//                    println("the explodeTask is: $taskName")
-//                }
 
                 if (buildDependencies.size == 0) {
                     explodeTask.dependsOn(prepareTask)
                 } else {
                     explodeTask.dependsOn(buildDependencies.first())
-                    //buildDependencies.first().finalizedBy(explodeTask)
-
                 }
                 val javacTask = versionAdapter.javaCompileTask
                 javacTask.dependsOn(explodeTask)
@@ -177,17 +165,12 @@ class VariantProcessor(private val project: Project, private val variant: Librar
             project.file("${project.buildDir.path}/intermediates/library_manifest/${variant
                     .name}/AndroidManifest.xml")
         } else {
-            // TODO
-            //processManifestTask.manifestOutputDirectory.get().asFile.absolutePath + " +
-            //""/AndroidManifest.xml")
-
             project.file(processManifestTask.manifestOutputDirectory.asFile.get().absolutePath + "/AndroidManifest.xml")
-
         }
         val manifestsMergeTask = project.tasks.create("merge${variant.name.capitalize()
         }Manifest", LibraryManifestMerger::class.java)
         manifestsMergeTask.gradleVersion = project.gradle.gradleVersion
-        manifestsMergeTask.gradlePluginVersion = gradlePluginVersion!!
+        manifestsMergeTask.gradlePluginVersion = gradlePluginVersion
         manifestsMergeTask.variantName = variant.name
         manifestsMergeTask.mainManifestFile = manifestOutputBackup
         val list = ArrayList<File>()
@@ -395,5 +378,13 @@ class VariantProcessor(private val project: Project, private val variant: Librar
             }
         }
         mergeFileTask.dependsOn(prepareTask)
+    }
+
+    private fun DefaultResolvedArtifact.getBuildDependencies(): TaskDependency {
+
+        val field = this.javaClass.getDeclaredField("buildDependencies")
+        field.isAccessible = true
+        val value = field.get(this)
+        return value as TaskDependency
     }
 }

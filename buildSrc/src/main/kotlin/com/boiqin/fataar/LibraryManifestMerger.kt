@@ -13,6 +13,7 @@ import java.util.*
 /**
  * ManifestMerger for Library
  * @author kezong on 2019/7/8.
+ * Modify by alexbchen on 2019/11/05.
  */
 open class LibraryManifestMerger : InvokeManifestMerger() {
 
@@ -24,9 +25,9 @@ open class LibraryManifestMerger : InvokeManifestMerger() {
             doFullTaskAction()
         } catch (e: Exception) {
             e.printStackTrace()
-            println("Gradle Plugin Version:$gradlePluginVersion")
-            println("Gradle Version:$gradleVersion")
-            println("If you see this error message, please submit issue to ")
+            Utils.logInfo("Gradle Plugin Version:$gradlePluginVersion")
+            Utils.logInfo("Gradle Version:$gradleVersion")
+            Utils.logInfo("If you see this error message, please submit issue to me")
         }
 
     }
@@ -59,6 +60,7 @@ open class LibraryManifestMerger : InvokeManifestMerger() {
             throw BuildException(mergingReport.reportString)
         }
 
+        checkNotNull(outputFile)
         // fix utf-8 problem in windows
         val writer = BufferedWriter(OutputStreamWriter(
                 FileOutputStream(outputFile), "UTF-8")

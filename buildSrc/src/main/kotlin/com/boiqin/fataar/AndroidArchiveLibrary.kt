@@ -107,6 +107,4 @@ class AndroidArchiveLibrary(private val project: Project, private val artifact: 
             }
             return packageName
         }
-
-
 }

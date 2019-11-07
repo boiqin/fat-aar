@@ -16,37 +16,25 @@ import java.util.*
 /**
  * R file processor
  * @author kezong on 2019/7/16.
+ * Modify by alexbchen on 2019/11/05.
  */
 class RProcessor(private val project: Project, private val variant: LibraryVariant,
                  private val libraries: Collection<AndroidArchiveLibrary>, private val gradlePluginVersion: String) {
 
-    private var javaDir: File
-    private var classDir: File
-    private var jarDir: File
-    private var aarUnZipDir: File
-    private var aarOutputDir: File
-    private var aarOutputPath: String
+    private var javaDir: File = project.file("${project.buildDir}/intermediates/fat-R/r/${variant.dirName}")
+    private var classDir: File = project.file("${project.buildDir}/intermediates/fat-R/r-class/${variant.dirName}")
+    // aar zip file
+    private var jarDir: File = project.file("${project.buildDir}/outputs/aar-R/${variant.dirName}/libs")
+    private var aarUnZipDir: File = jarDir.parentFile
+    private var aarOutputDir: File = project.file("${project.buildDir}/outputs/aar/")
+    private var aarOutputPath: String = variant.outputs.first().outputFile.absolutePath
     private var versionAdapter: VersionAdapter = VersionAdapter(project, variant, gradlePluginVersion)
-
-    init {
-        // R.java dir
-        javaDir = project.file("${project.buildDir}/intermediates/fat-R/r/${variant.dirName}")
-        // R.class compile dir
-        classDir = project.file("${project.buildDir}/intermediates/fat-R/r-class/${variant.dirName}")
-        // R.jar dir
-        jarDir = project.file("${project.buildDir}/outputs/aar-R/${variant.dirName}/libs")
-        // aar zip file
-        aarUnZipDir = jarDir.parentFile
-        // aar output dir
-        aarOutputDir = project.file("${project.buildDir}/outputs/aar/")
-        aarOutputPath = variant.outputs.first().outputFile.absolutePath
-    }
 
 
     private val symbolsMap: Map<String, HashMap<String, String>>
         get() {
             val file = versionAdapter.symbolFile
-            //LogUtil.green("get R file and deal: ${file.absolutePath}")
+            Utils.logInfo("get R file and deal: ${file.absolutePath}")
             if (!file.exists()) {
                 throw IllegalAccessException("{$file.absolutePath} not found")
             }
@@ -243,11 +231,12 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
     private fun deleteEmptyDir(file: File) {
         file.listFiles()?.forEach { x ->
             if (x.isDirectory) {
-                if (x.listFiles().isEmpty()) {
+                val listFiles = x.listFiles()
+                if ((null != listFiles) && listFiles.isEmpty()) {
                     x.delete()
                 } else {
                     deleteEmptyDir(x)
-                    if (x.listFiles().isEmpty()) {
+                    if ((null != listFiles) && listFiles.isEmpty()) {
                         x.delete()
                     }
                 }

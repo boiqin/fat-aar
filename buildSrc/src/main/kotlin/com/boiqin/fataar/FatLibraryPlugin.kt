@@ -12,10 +12,9 @@ import kotlin.collections.HashSet
 
 /**
  * plugin entry
- *
  * Created by Vigi on 2017/1/14.
  * Modified by kezong on 2018/12/18
- * Modified by kezong on 2019/11/05
+ * Modify by alexbchen on 2019/11/05.
  */
 class FatLibraryPlugin : Plugin<Project> {
     companion object {
@@ -45,29 +44,13 @@ class FatLibraryPlugin : Plugin<Project> {
         project.afterEvaluate {
             resolveArtifacts()
             dealUnResolveArtifacts()
-
             val android = project.extensions.getByName("android") as LibraryExtension
-            var taskFounded = false
-
-            android.libraryVariants.filter {
-                // 过滤掉不需要的task
-                val currentFlavor = it.flavorName + it.buildType.name.capitalize()
-                taskList.isNotEmpty() && taskList.first().contains(currentFlavor, true)
-            }.forEach {
+            android.libraryVariants.all {
                 Utils.logInfo("start process: ${it.flavorName}${it.buildType.name.capitalize()}")
-                taskFounded = true
-                // 开始处理
                 processVariant(it)
             }
-
-            if (!taskFounded && taskList.isNotEmpty()) {
-                Utils.logInfo(
-                        "CombineAarPlugin has no talk with current task: ${taskList.first()}")
-            }
         }
-
     }
-
 
     private fun checkAndroidPlugin() {
         if (!project.plugins.hasPlugin("com.android.library")) {

@@ -9,6 +9,7 @@ import java.io.File
 
 /**
  * @author kezong on 2019/7/16.
+ * Modify by alexbchen on 2019/11/05.
  */
 class VersionAdapter(private val project: Project, private val variant: LibraryVariant,
                      private val gradlePluginVersion: String) {

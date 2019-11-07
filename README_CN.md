@@ -2,7 +2,10 @@
 [![license](http://img.shields.io/badge/license-Apache2.0-brightgreen.svg?style=flat)](https://github.com/kezong/fat-aar-android/blob/master/LICENSE)
 [![Download](https://api.bintray.com/packages/kezong/maven/fat-aar/images/download.svg)](https://bintray.com/kezong/maven/fat-aar/_latestVersion)
 
-该插件提供了将library以及它依赖的module一起打包成一个完整aar的解决方案，支持gradle plugin 3.0.1及以上。（目前测试的版本范围是gradle plugin 3.0.1 - 3.4.2，gradle 4.6 - 5.4.1）
+该插件是在kezong和TangHuaiZhe的基础上进行kotlin重写，方便日后维护，有使用方面的问题也可直接向我提出
+该插件提供了将library以及它依赖的module一起打包成一个完整aar的解决方案，支持gradle
+plugin 3.0.1及以上。（目前测试的版本范围是gradle plugin 3.0.1 -
+3.4.2，gradle 4.6 - 5.4.1）
 
 ## 如何使用
 
