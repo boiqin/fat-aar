@@ -77,6 +77,7 @@ object FlavorArtifact {
         } else {
             "${buildPath}/outputs/aar/${unResolvedArtifact.moduleName}-${variant.flavorName}-${variant.buildType.name}.aar"
         }
+        Utils.logInfo(outputName)
         return File(outputName)
     }
 

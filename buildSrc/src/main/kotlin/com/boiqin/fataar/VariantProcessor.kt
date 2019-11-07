@@ -136,6 +136,8 @@ class VariantProcessor(private val project: Project, private val variant: Librar
                     Utils.logInfo("$artifact dep is $dep")
                 }
                 //val buildDependencies = artifact.buildDependencies.getDependencies()
+
+
                 Utils.deleteDir(archiveLibrary.rootFolder)
                 val zipFolder = archiveLibrary.rootFolder
                 zipFolder.mkdirs()

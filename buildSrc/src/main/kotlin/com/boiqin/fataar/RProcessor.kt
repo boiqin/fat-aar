@@ -174,7 +174,6 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
                 Utils.deleteDir(destFolder)
             }
             if (libraries.isNotEmpty()) {
-                val symbolsMap = symbolsMap
                 libraries.forEach {
                     Utils.logInfo("Generate R File, Library:${it.name}")
                     createRFile(it, destFolder, symbolsMap)
@@ -197,14 +196,15 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
             it.targetCompatibility = android.compileOptions.targetCompatibility.toString()
             it.classpath = classpath
             it.destinationDir = destinationDir
+            Utils.logDebug(it.sourceCompatibility)
+            Utils.logDebug(it.targetCompatibility)
         }
 
         task.doFirst {
             Utils.logInfo("Compile R.class, Dir:${sourceDir.path}")
             Utils.logInfo("Compile R.class, classpath:${classpath.first().absolutePath}")
 
-            if (Utils.compareVersion(gradlePluginVersion, "3.3" +
-                            ".0") >= 0) {
+            if (Utils.compareVersion(gradlePluginVersion, "3.3.0") >= 0) {
                 project.copy {
                     it.from(project.zipTree(versionAdapter.rClassPath.first()
                             .absolutePath + "/R.jar"))

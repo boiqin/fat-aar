@@ -1,5 +1,7 @@
+import com.boiqin.fataar.FatLibraryPlugin
+
 apply plugin: 'com.android.library'
-apply plugin: com.boiqin.fataar.FatLibraryPlugin
+apply plugin: FatLibraryPlugin
 
 repositories {
     flatDir {
