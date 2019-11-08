@@ -160,7 +160,7 @@ class VariantProcessor(private val project: Project, private val variant: Librar
      */
     private fun processManifest() {
         val processManifestTask = versionAdapter.processManifest
-        val manifestOutputBackup = if (gradlePluginVersion != null && Utils.compareVersion
+        val manifestOutputBackup = if (Utils.compareVersion
                 (gradlePluginVersion, "3.3.0") >= 0) {
             project.file("${project.buildDir.path}/intermediates/library_manifest/${variant
                     .name}/AndroidManifest.xml")

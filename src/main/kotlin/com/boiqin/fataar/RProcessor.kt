@@ -84,7 +84,7 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
             // support gradle 5.1 && gradle plugin 3.4 before, the outputName is changed
             val file = File(aarOutputPath)
             if (!file.exists()) {
-                aarOutputPath = aarOutputDir?.absolutePath + "/" + project.name + ".aar"
+                aarOutputPath = aarOutputDir.absolutePath + "/" + project.name + ".aar"
                 reBundleAar.archiveName = File(aarOutputPath).name
             }
         }
@@ -133,8 +133,8 @@ class RProcessor(private val project: Project, private val variant: LibraryVaria
 
 
 
-        File("${rFolder?.path}/$packagePath").mkdirs()
-        val outputStream = FileOutputStream("${rFolder?.path}/$packagePath/R.java")
+        File("${rFolder.path}/$packagePath").mkdirs()
+        val outputStream = FileOutputStream("${rFolder.path}/$packagePath/R.java")
         outputStream.write(sb.toString().toByteArray())
         outputStream.close()
     }
